@@ -6,21 +6,20 @@
 	<title>rikrikrik - shortKeys jQuery plug-in</title>
 	<link rel="stylesheet" href="style.css" type="text/css" media="screen" title="Keys" />
 	<script src="jquery.js" type="text/javascript"></script>	
-	<script src="jquery.shortkeys.js" type="text/javascript"></script>	
+	<script src="jquery.shortkeys.new.js" type="text/javascript"></script>	
 	<script type="text/javascript">	
 		$(document).ready(function() {
-			$(document).shortkeys({
+			$.shortkeys({
+				'V':          function () { $('#try_me').append('V<br />'); },
+				'y+t':        function () { $('#try_me').append('T+Y<br />'); },
+				't+u':        function () { $('#try_me').append('T+U<br />'); },
 				'N':          function () { $('#try_me').append('N<br />'); },
 				'M':          function () { $('#try_me').append('M<br />'); },
 				'Space':      function () { $('#try_me').append('Space<br />'); },
-				'Space+V':    function () { $('#try_me').append('Space+V<br />'); },
-				'V':          function () { $('#try_me').append('V<br />'); },
-				't+y':        function () { $('#try_me').append('T+Y<br />'); },
-				't+u':        function () { $('#try_me').append('T+U<br />'); }
+				'Space+V':    function () { $('#try_me').append('Space+V<br />'); }
 			});
 		});
 	</script>
-	<script src="/mint/?js" type="text/javascript"></script>
 </head>
 	<body>
 	    <p id="rikrikrik"><a href="http://rikrikrik.com">rikrikrik</a></p>
@@ -52,6 +51,10 @@
 				<li>t and u</li>
 			</ul>
 		</div>
+		
+		<form>
+			<input type="text" name="hello" value="" id="hello" />
+		</form>
 		
 		<p>Example uses following code:</p>
 <code><pre>

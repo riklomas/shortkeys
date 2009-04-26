@@ -2,10 +2,10 @@ jQuery.fn.shortkeys = jQuery.fn.keys = function (obj, settings) {
 	var el = this;
 	this.settings = jQuery.extend({
 			split: "+",
-			moreKeys: {}			
+			moreKeys: {}
 		}, settings || {});	
 	this.wackyKeys = { '.': 190, ',': 188, ';': 59,	'Space': 32	};	
-	this.formElements  = new Array("input", "select", "textarea", "button");
+	this.formElements = "input,select,textarea,button";
 	this.keys = new Array();	
 	this.onFormElement = false;
 	this.keysDown = new Array();
@@ -53,7 +53,7 @@ jQuery.fn.shortkeys = jQuery.fn.keys = function (obj, settings) {
 		return true;
 	};
 	this.keyRemoveAll = function () {
-		this.keysDown = new Array();	
+		this.keysDown = new Array();
 	};
 	this.focused = function (bool) {
 		this.onFormElement = bool;
@@ -65,22 +65,28 @@ jQuery.fn.shortkeys = jQuery.fn.keys = function (obj, settings) {
 			if(el.keyTest(i) && !el.onFormElement) {
 				obj[x]();
 				return false;
-				break;	
-			}			
+				break;
+			}
 			i++;
 		};	
 	});	
 	$(document).keyup(function (e) {
 		el.keyRemove(e.keyCode);
 	});	
-	for(x in this.formElements) {
-		$(this.formElements[x]).focus( function () {
-			el.focused(true);
-		});
-		$(this.formElements[x]).blur( function () {
-			el.focused(false);
-		});
-	}	
+	
+	$.extend({ 
+		notFormElements: function() {
+			$(el.formElements).focus(function(){
+				el.focused(true);
+			});
+			$(el.formElements).blur(function(){ 
+				el.focused(false); 
+			});
+		}
+	});
+	
+	$.notFormElements();
+
 	$(document).focus( function () {
 		el.keyRemoveAll();
 	});
