@@ -1,98 +1,123 @@
-jQuery.fn.shortkeys = jQuery.fn.keys = function (obj, settings) {		
-	var el = this;
-	this.settings = jQuery.extend({
-			split: "+",
-			moreKeys: {}
-		}, settings || {});	
-	this.wackyKeys = { '.': 190, ',': 188, ';': 59,	'Space': 32	};	
-	this.formElements = "input,select,textarea,button";
-	this.keys = new Array();	
-	this.onFormElement = false;
-	this.keysDown = new Array();
-	this.init = function (obj) {
-		for(x in this.wackyKeys) {
-			this.wackyKeys[x.toUpperCase()] = this.wackyKeys[x];
+(function($) {
+	var specialKeys = {
+		'.': 190,
+		',': 188,
+		';': 59,
+		'Space': 32,
+		'Left': 37,
+		'Up': 38,
+		'Right': 39,
+		'Down': 40
+	};
+	var convertToNumber = function(inp, keys) {
+		if(keys && typeof keys[inp] !== 'undefined') {
+			return keys[inp];
 		}
-		for(x in obj) {
-			this.keys.push(x.split(this.settings.split));
-		}
-		for(i in this.keys) {
-			var quickArr = new Array();
-			for(j in this.keys[i]) {
-				quickArr.push(this.convertToNumbers(this.keys[i][j].toUpperCase()));
-			}
-			quickArr.sort();
-			this.keys[i] = quickArr;
-		}
-	};	
-	this.convertToNumbers = function (inp) {
-		if (this.wackyKeys[inp] != undefined) {
-			return this.wackyKeys[inp];
-		}
+
 		return inp.toUpperCase().charCodeAt(0);
-	};	
-	this.keyAdd = function(keyCode) {
-		this.keysDown.push(keyCode);
-		this.keysDown.sort();
 	};
-	this.keyRemove = function (keyCode) {
-		for(i in this.keysDown) {
-			if(this.keysDown[i] == keyCode) {
-				this.keysDown.splice(i,1);
+
+	$.fn.shortkeys = $.fn.keys = function(obj, settings) {
+		var ele = this;
+		var onFormElement = false;
+		var keys = [];
+		var keyEvents = [];
+		var keysDown = [];
+
+		var keyAdd = function(keyCode) {
+			keysDown.push(keyCode);
+			keysDown.sort();
+		};
+
+		var keyRemove = function(keyCode) {
+			for(var i = 0; i < keysDown.length; i++) {
+				if(keysDown[i] == keyCode) {
+					keysDown.splice(i, 1);
+					keysDown.sort();
+
+					break;
+				}
 			}
-		};	
-		this.keysDown.sort();	
-	};		
-	this.keyTest = function (i) {
-		if (this.keys[i].length != this.keysDown.length) return false;
-		for(j in this.keys[i]) {
-			if(this.keys[i][j] != this.keysDown[j]) {
-				return false;
+		};
+
+		var keyMatch = function() {
+			var isSame;
+
+			for(var i = 0; i < keys.length; i++) {
+				if(keysDown.length != keys[i].length) {
+					continue;
+				}
+
+				isSame = true;
+
+				for(var j = 0; j < keysDown.length; j++) {
+					if(keysDown[j] != keys[i][j]) {
+						isSame = false;
+						
+						break;
+					}
+				}
+
+				if(isSame) {
+					keyEvents[i]();
+
+					return false
+				}
 			}
-		}	
-		return true;
-	};
-	this.keyRemoveAll = function () {
-		this.keysDown = new Array();
-	};
-	this.focused = function (bool) {
-		this.onFormElement = bool;
-	}	
-	$(document).keydown(function(e) {
-		el.keyAdd(e.keyCode);
-		var i = 0;
+
+			return true;
+		};
+
+		settings = $.extend(true, {
+			split: '+',
+			moreKeys: specialKeys
+		}, settings || {});
+
+		// Convert the object definitions into key code arrays
 		for(x in obj) {
-			if(el.keyTest(i) && !el.onFormElement) {
-				obj[x]();
-				return false;
-				break;
+			var exploded = x.split(settings.split);
+
+			for(var i = 0; i < exploded.length; i++) {
+				exploded[i] = convertToNumber(exploded[i], settings.moreKeys);
 			}
-			i++;
-		};	
-	});	
-	$(document).keyup(function (e) {
-		el.keyRemove(e.keyCode);
-	});	
-	
-	$.extend({ 
-		notFormElements: function() {
-			$(el.formElements).focus(function(){
-				el.focused(true);
-			});
-			$(el.formElements).blur(function(){ 
-				el.focused(false); 
-			});
+
+			exploded.sort();
+
+			keys.push(exploded);
+			keyEvents.push(obj[x]);
 		}
-	});
-	
-	$.notFormElements();
 
-	$(document).focus( function () {
-		el.keyRemoveAll();
-	});
-	
-	this.init(obj);
-	jQuery.extend(this.wackyKeys, this.settings.moreKeys);
+		// Ignore key presses when using form inputs
+		$(':input', this).on({
+			focus: function() { onFormElement = true; },
+			blur: function() { onFormElement = false; }
+		});
 
-	return this;
-}
+		// Bind to the keydown event
+		this.on('keydown', function(e) {
+			if(onFormElement) {
+				return;
+			}
+
+			keyAdd(e.keyCode);
+
+			return keyMatch();
+		});
+
+		// Bind to the keyup event
+		this.on('keyup', function(e) {
+			if(onFormElement) {
+				return;
+			}
+
+			keyRemove(e.keyCode);
+		});
+
+		// Bind to the focus event
+		this.on('focus', function(e) {
+			keysDown = [];
+		});
+
+		return this;
+	};
+}(jQuery));
