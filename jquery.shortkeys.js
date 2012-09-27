@@ -91,8 +91,8 @@ jQuery.fn.shortkeys = jQuery.fn.keys = function (obj, settings) {
 		el.keyRemoveAll();
 	});
 	
-	this.init(obj);
 	jQuery.extend(this.wackyKeys, this.settings.moreKeys);
+	this.init(obj);
 
 	return this;
 }
